@@ -77,6 +77,10 @@ jobs:
             echo "=== PATCHED USB C++ STANDARD ==="
             grep -n "std=c++" node_modules/usb/binding.gyp
             npx electron-rebuild -f -w usb
+            npx electron-vite build
+            npx electron-builder --linux AppImage --arm64 --config
+            mkdir -p /github/workspace/dist/
+            cp dist/*-arm64.AppImage /github/workspace/dist/
 
       - name: Build for macOS (native)
         if: matrix.platform == 'darwin'
