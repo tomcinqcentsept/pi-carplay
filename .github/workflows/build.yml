@@ -24,19 +24,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - platform: x86_64
-            os: ubuntu-latest
-            arch: native
-            artifact_ext: AppImage
           - platform: arm64
             os: ubuntu-latest
             arch: emulated
             artifact_ext: AppImage
-          - platform: darwin
-            os: macos-latest
-            arch: native
-            artifact_ext: dmg
-
     steps:
       - uses: actions/checkout@v4
         with:
