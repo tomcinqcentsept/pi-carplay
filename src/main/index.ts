@@ -182,7 +182,7 @@ function createWindow(): void {
       applyAspectRatio(mainWindow, config.width, config.height);
     }
 
-    if (is.dev) mainWindow.webContents.openDevTools({ mode: 'detach' });
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
     carplayService.attachRenderer(mainWindow.webContents);
   });
 

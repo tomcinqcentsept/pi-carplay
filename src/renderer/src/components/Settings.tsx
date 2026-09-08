@@ -119,6 +119,7 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
     return () => clearInterval(timerId)
   }, [resetMessage])
 
+  /*
   useEffect(() => {
     const updateMic = async () => {
       try {
@@ -140,7 +141,9 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
     }
     window.carplay.usb.listenForEvents(micUsbHandler)
   }, [])
+  */
 
+  /*
   useEffect(() => {
     const updateCameras = async () => {
       try {
@@ -167,6 +170,7 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
     }
     window.carplay.usb.listenForEvents(usbHandler)
   }, [])
+  */
 
   const renderField = (label: string, key: keyof ExtraConfig, min?: number, max?: number) => (
     <Grid size={{ xs: 3 }} key={String(key)}>
