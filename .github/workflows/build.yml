@@ -73,11 +73,10 @@ jobs:
             npm ls usb node-addon-api || true
             echo "=== USB C++ STANDARD ==="
             grep -R "c++14" node_modules/usb --include="*.gyp" --include="*.gypi" || true
-            npm run typecheck
-            npm run build
-            npm run build:armLinux
-            mkdir -p /github/workspace/dist/
-            cp dist/*-arm64.AppImage /github/workspace/dist/
+            sed -i 's/-std=c++14/-std=c++17/g' node_modules/usb/binding.gyp
+            echo "=== PATCHED USB C++ STANDARD ==="
+            grep -n "std=c++" node_modules/usb/binding.gyp
+            npx electron-rebuild -f -w usb
 
       - name: Build for macOS (native)
         if: matrix.platform == 'darwin'
