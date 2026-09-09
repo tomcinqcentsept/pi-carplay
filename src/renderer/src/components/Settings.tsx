@@ -45,7 +45,7 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
     audioVolume: settings.audioVolume ?? 1.0,
     navVolume: settings.navVolume ?? 1.0,
   })
-  const [micLabel, setMicLabel] = useState('no device available')
+  const [micLabel] = useState('no device available')
   const [openBindings, setOpenBindings] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   const [resetMessage, setResetMessage] = useState("")
