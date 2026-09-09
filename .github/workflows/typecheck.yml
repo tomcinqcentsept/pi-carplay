@@ -31,7 +31,7 @@ jobs:
       - name: Clean & install dependencies
         run: |
           rm -rf node_modules package-lock.json
-          npm install --no-audit --prefer-offline
+          npm install --no-audit --prefer-offline --ignore-scripts
 
       - name: Run TypeScript type-check
         run: npm run typecheck
