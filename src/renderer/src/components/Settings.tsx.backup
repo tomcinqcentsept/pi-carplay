@@ -46,6 +46,7 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
     navVolume: settings.navVolume ?? 1.0,
   })
   const [micLabel, setMicLabel] = useState('no device available')
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([])
   const [openBindings, setOpenBindings] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   const [resetMessage, setResetMessage] = useState("")
@@ -54,6 +55,7 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
 
   const saveSettings = useCarplayStore(s => s.saveSettings)
   const isDongleConnected = useStatusStore(s => s.isDongleConnected)
+  const setCameraFound = useStatusStore(s => s.setCameraFound)
   const theme = useTheme()
 
   const debouncedSave = useMemo(() => debounce((newSettings: ExtraConfig) => saveSettings(newSettings), 300), [saveSettings])
@@ -117,6 +119,55 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
     return () => clearInterval(timerId)
   }, [resetMessage])
 
+  useEffect(() => {
+    const updateMic = async () => {
+      try {
+        const label = await window.carplay.usb.getSysdefaultPrettyName()
+        const final = label && !['sysdefault','null'].includes(label) ? label : 'no device available'
+        setMicLabel(final)
+        if (!activeSettings.microphone && final !== 'no device available') {
+          const upd = { ...activeSettings, microphone: 'sysdefault' }
+          setActiveSettings(upd)
+          debouncedSave(upd)
+        }
+      } catch {
+        console.warn('[Settings] Mic label fetch failed')
+      }
+    }
+    updateMic()
+    const micUsbHandler = (_: any, data: { type: string }) => {
+      if (['attach','plugged','detach','unplugged'].includes(data.type)) updateMic()
+    }
+    window.carplay.usb.listenForEvents(micUsbHandler)
+  }, [])
+
+  useEffect(() => {
+    const updateCameras = async () => {
+      try {
+        const devs = await navigator.mediaDevices.enumerateDevices()
+        const cams = devs.filter(d => d.kind === 'videoinput')
+        setCameras(cams)
+        setCameraFound(cams.length > 0)
+
+        setActiveSettings(prev => {
+          if (prev.camera || cams.length === 0) return prev
+          const updated = { ...prev, camera: cams[0].deviceId }
+          saveSettings(updated)
+          return updated
+        })
+      } catch (err) {
+        console.warn('[Settings] enumerateDevices failed', err)
+      }
+    }
+    updateCameras()
+    const usbHandler = (_: any, data: { type: string }) => {
+      if (['attach', 'plugged', 'detach', 'unplugged'].includes(data.type)) {
+        updateCameras()
+      }
+    }
+    window.carplay.usb.listenForEvents(usbHandler)
+  }, [])
+
   const renderField = (label: string, key: keyof ExtraConfig, min?: number, max?: number) => (
     <Grid size={{ xs: 3 }} key={String(key)}>
       <TextField
@@ -140,6 +191,27 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
           min={0} max={100} step={5} marks valueLabelDisplay="auto"
           onChange={(_,v) => typeof v==='number' && settingsChange(key,v/100)}
         />
+      </FormControl>
+    </Grid>
+  )
+
+  const renderCameras = () => (
+    <Grid size={{ xs: 6 }}>
+      <FormControl fullWidth>
+        <FormLabel>Camera</FormLabel>
+        <RadioGroup
+          value={activeSettings.camera}
+          onChange={e => settingsChange('camera', e.target.value)}
+        >
+          {cameras.map(cam => (
+            <FormControlLabel
+              key={cam.deviceId}
+              value={cam.deviceId}
+              control={<Radio />} 
+              label={cam.label || 'Camera'}
+            />
+          ))}
+        </RadioGroup>
       </FormControl>
     </Grid>
   )
@@ -181,6 +253,8 @@ const Settings: React.FC<SettingsProps> = ({ settings }) => {
           <Grid size={{xs:3}} sx={{minWidth:140,mx:2,display:'flex',justifyContent:'center'}}>
             <FormControl fullWidth><FormLabel>MICROPHONE</FormLabel><RadioGroup value={activeSettings.micType} onChange={e=>settingsChange('micType',e.target.value)}><Stack direction="column"><FormControlLabel value="os" control={<Radio />} label={<Typography noWrap>OS: {micLabel}</Typography>} /><FormControlLabel value="box" control={<Radio />} label="BOX"/></Stack></RadioGroup></FormControl>
           </Grid>
+
+          {cameras.length > 0 && renderCameras()}
         </Grid>
       </Box>
 
