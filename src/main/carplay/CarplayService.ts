@@ -53,10 +53,10 @@ export class CarplayService {
           type: 'resolution',
           payload: { width: msg.width, height: msg.height },
         })
-        this.sendChunked('carplay-video-chunk', msg.data?.buffer, 512 * 1024)
+        this.sendChunked('carplay-video-chunk', msg.data?.buffer as ArrayBuffer | undefined, 512 * 1024)
       } else if (msg instanceof AudioData) {
         if (msg.data) {
-          this.sendChunked('carplay-audio-chunk', msg.data.buffer, 64 * 1024, { ...msg })
+          this.sendChunked('carplay-audio-chunk', msg.data.buffer as ArrayBuffer, 64 * 1024, { ...msg })
 
           if (!this.audioInfoSent) {
             const meta = decodeTypeMap[msg.decodeType]

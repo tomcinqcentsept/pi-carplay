@@ -108,7 +108,7 @@ export class DongleDriver extends EventEmitter {
   send = async (msg: SendableMessage) => {
     if (!this._device?.opened) return null
     try {
-      const res = await this._device.transferOut(this._outEP!.endpointNumber, msg.serialise())
+      const res = await this._device.transferOut(this._outEP!.endpointNumber, msg.serialise() as BufferSource)
       return res.status === 'ok'
     } catch (err) {
       console.error('Send error', err)
